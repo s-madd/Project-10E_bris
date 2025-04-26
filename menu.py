@@ -10,7 +10,7 @@ class Menu:
         self._current_option_idex = 0 # текущая выбранная область меню
 
     def append_option(self, option, callback): #добавление опции (текст пункта меню, функция)
-        self._option_surfaces.append(ARIAL_50.render(option, True, (0, 0, 255))) #добавление отренд. текста
+        self._option_surfaces.append(ARIAL_50.render(option, True, MENU_FONT_COLOR)) #добавление отренд. текста
         self._callbacks.append(callback) #добавляем опцию
 
     def switch(self, direction): #переключение
@@ -25,7 +25,7 @@ class Menu:
             option_rect.topleft = (x, y + i * option_y_padding)
 
             if i == self._current_option_idex:
-                pygame.draw.rect(surf, (0, 100, 0), option_rect)
+                pygame.draw.rect(surf, MENU_CHNG_BTN_COLOR, option_rect)
             surf.blit(option, option_rect)
 
 
