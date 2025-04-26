@@ -15,8 +15,8 @@ def events(hero):
                 hero.m_right = True
             elif event.key == pygame.K_a:
                 hero.m_left = True
+
             
-        
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
                 hero.m_up = False
