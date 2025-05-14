@@ -1,16 +1,25 @@
 import pygame
 import sys
 import math
+import os
+import subprocess
 
 from hero import Hero
+from enemy import Enemy
 from settings import *
 import controls
 import menu_controls
 from menu import Menu
 import ls
+from interface import Interface
+
 
 # Инициализация pygame
 pygame.init()
+
+# инизиализация и загрузка музыки
+pygame.mixer.init()
+pygame.mixer.music.load("music.mp3")
 
 # Настройка экрана и таймера
 clock = pygame.time.Clock()
@@ -27,20 +36,23 @@ except pygame.error as e:
 
 # Создание игровых объектов
 hero = Hero(screen)
+enemy = Enemy(screen)
 menu = Menu()
 light_system = ls.LightSystem(SCREEN_WIDTH, SCREEN_HEIGHT)
+interface = Interface(screen)
 
+objects = [hero, enemy, menu, light_system, interface]
 
 def run():
     """Основная функция игры, запускает главное меню."""
     # Настройка отображения окна
     pygame.display.set_caption('Tenebris 0.0.3')
     pygame.display.set_icon(icon)
+    pygame.mouse.set_visible(True)
 
     # Настройка пунктов меню
     menu.append_option('Начать игру', start_game)
     menu.append_option('Выйти', sys.exit)
-
     # Главный цикл меню
     while True:
         # Отрисовка
@@ -59,23 +71,40 @@ def start_game():
     # Создание фона из текстуры
     background = create_background(dungeon_texture, SCREEN_WIDTH, SCREEN_HEIGHT)
 
+    # проигрование музыки
+    pygame.mixer.music.play() 
+
     # Игровой цикл
     while True:
         # Обработка ввода
         controls.events(hero)
         hero.update()
+        enemy.update()
+        enemy.chase_player(hero)
         
         # Отрисовка
         screen.fill(BG_COLOR)  # Заполняем фон базовым цветом 
         screen.blit(background, (0, 0))  # Рисуем текстурированный фон
+        
+        enemy.draw()
         hero.draw()  # Рисуем персонажа
+        
         
         # Обновление и отрисовка освещения
         light_system.update_light(hero.rect.center)  
         light_system.render(screen)  
+
+        interface.draw_hp(screen, hero)
     
         pygame.display.flip()
         clock.tick(FPS)  # Поддерживаем заданную частоту кадров
+
+        if hero.hp <= 0: break
+
+    restart_game = menu.show_death_screen(screen)
+    if restart_game:
+        pygame.quit()
+        os.system("restart.bat")
 
 
 def create_background(texture, width, height):

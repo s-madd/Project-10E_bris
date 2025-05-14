@@ -11,7 +11,7 @@ class LightSystem:
         
         # Основные параметры
         self.base_radius = 130
-        self.base_intensity = 200
+        self.base_intensity = 220
         self.current_radius = self.base_radius
         self.target_radius = self.base_radius
         
@@ -58,7 +58,7 @@ class LightSystem:
         # Редкое погасание
         if not self.is_light_out and random.random() < self.LIGHT_OUT_CHANCE:
             self.is_light_out = True
-            self.light_out_duration = random.randint(600, 1500)
+            self.light_out_duration = random.randint(1500, 5000)
             self.light_out_timer = current_time + self.light_out_duration
             self.target_radius = self.base_radius * 0
         
@@ -81,8 +81,8 @@ class LightSystem:
         
         # Интенсивность затемнения (увеличиваем при эффектах)
         intensity = self.base_intensity
-        if self.is_light_out: intensity += 50
-        if self.is_wind_effect: intensity += 30
+        if self.is_light_out: intensity += 30
+        if self.is_wind_effect: intensity += 15
         
         self._update_light_internal(center_pos, int(self.current_radius), intensity)
     

@@ -1,6 +1,7 @@
 import pygame
 import sys
 from settings import *
+import time
 
 
 class Menu:
@@ -27,6 +28,34 @@ class Menu:
             if i == self._current_option_idex:
                 pygame.draw.rect(surf, MENU_CHNG_BTN_COLOR, option_rect)
             surf.blit(option, option_rect)
+
+    def show_death_screen(self, screen):
+        """Функция для отображения экрана смерти"""
+    
+        screen.fill((0, 0, 0))
+        
+        # Текст "Вы погибли"
+        death_text = ARIAL_50.render("ВЫ ПОГИБЛИ", True, (255, 255, 255))
+        death_rect = death_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 50))
+        screen.blit(death_text, death_rect)
+        
+        # Инструкция для продолжения
+        restart_text = ARIAL_30.render("Нажмите ESC для рестарта", True, (255, 255, 255))
+        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 50))
+        screen.blit(restart_text, restart_rect)
+        
+        pygame.display.flip()
+    
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:  # Выход из игры
+                        return True
+        
+
 
 
 

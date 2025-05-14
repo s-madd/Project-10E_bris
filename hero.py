@@ -2,6 +2,7 @@ import pygame
 import sys
 
 from settings import *
+from base_func import *
 
 
 class Hero():
@@ -14,7 +15,9 @@ class Hero():
                     int(original_image.get_height() * scale_factor))
         self.base_image = pygame.transform.scale(original_image, new_size)
         
+        
         self.image = self.base_image
+        self.saved_img = self.base_image
         self.rect = self.image.get_rect()
         self.screen_rect = screen.get_rect()
         self.rect.centerx = self.screen_rect.centerx
@@ -25,9 +28,13 @@ class Hero():
         self.m_right = False
         self.m_left = False
  
+
         self.type = 'hero' #тип объекта
         self.moveSpeed = 4 #скорость передвижения
         self.facing_r = True #флаг поворота модели направо
+        self.hp = 100
+        
+
 
 
     def draw(self):
@@ -40,22 +47,16 @@ class Hero():
         if self.m_down:
             self.rect.centery += 1 * self.moveSpeed
         if self.m_right:
-            self.turn_r()
+            turn_r(self)
             self.rect.centerx += 1 * self.moveSpeed
         if self.m_left:
-            self.turn_l()
+            turn_l(self)
             self.rect.centerx -= 1 * self.moveSpeed
 
-
-    def turn_l(self):
-        if self.facing_r:
-            self.facing_r = False
-            self.image = pygame.transform.flip(self.base_image, True, False)
-
-
-    def turn_r(self):
-        if not(self.facing_r):
-            self.facing_r = True
-            self.image = self.base_image
         
+
+
+
+
+
 
