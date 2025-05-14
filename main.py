@@ -46,7 +46,7 @@ objects = [hero, enemy, menu, light_system, interface]
 def run():
     """Основная функция игры, запускает главное меню."""
     # Настройка отображения окна
-    pygame.display.set_caption('Tenebris 0.0.3')
+    pygame.display.set_caption('Tenebris 0.0.5')
     pygame.display.set_icon(icon)
     pygame.mouse.set_visible(True)
 
