@@ -27,8 +27,8 @@ class Enemy():
         self.image = self.base_image
         self.saved_img = self.base_image
         self.rect = self.image.get_rect()
-        self.rect.x = random.choice(range(1, SCREEN_WIDTH))  # Случайная позиция по X
-        self.rect.y = random.choice(range(1, SCREEN_HEIGHT))  # Случайная позиция по Y
+        self.rect.x = random.choice(range(1, WORLD_WIDTH))  # Случайная позиция по X
+        self.rect.y = random.choice(range(1, WORLD_HEIGHT))  # Случайная позиция по Y
 
         # Флаги движения
         self.m_up = False
@@ -44,7 +44,7 @@ class Enemy():
 
         # Параметры здоровья и атаки
         self.hp = 40
-        self.damage = 1              # Урон за атаку
+        self.damage = 10             # Урон за атаку
         self.damage_distance = 40    # Дистанция атаки
         self.attack_speed = 2        # Задержка между атаками (в секундах)
         self.stop_before_atck = 1    # Время простоя после атаки

@@ -29,7 +29,7 @@ class Menu:
                 pygame.draw.rect(surf, MENU_CHNG_BTN_COLOR, option_rect)
             surf.blit(option, option_rect)
 
-    def show_death_screen(self, screen):
+    def show_death_screen(self, screen, hero):
         """Функция для отображения экрана смерти"""
     
         screen.fill((0, 0, 0))
@@ -43,6 +43,10 @@ class Menu:
         restart_text = ARIAL_30.render("Нажмите ESC для рестарта", True, (255, 255, 255))
         restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 50))
         screen.blit(restart_text, restart_rect)
+
+        points_text = ARIAL_30.render(f"Заработано {hero.points} очков", True, (255, 255, 255))
+        points_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2 + 50, SCREEN_HEIGHT//2 + 150))
+        screen.blit(points_text, points_rect)
         
         pygame.display.flip()
     

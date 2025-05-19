@@ -42,6 +42,7 @@ class Hero:
         self.moveSpeed = 4           # Скорость передвижения
         self.facing_r = True         # Направление взгляда (вправо/влево)
         self.hp = 100                # Здоровье
+        self.points = 0
 
         # Параметры атаки
         self.player_radius = 20       # Радиус персонажа
@@ -60,13 +61,15 @@ class Hero:
         """Отрисовка героя на экране"""
         self.screen.blit(self.image, self.rect)
 
-    def update(self, enemies):
+    def update(self, enemies, world_width, world_height):
         """
         Обновление состояния героя каждый кадр
         Args:
             enemies: Список всех врагов для обработки взаимодействий
         """
         self.tick += 1  # Увеличение счетчика кадров
+
+        if self.tick % (FPS * 10) == 0: self.points += 5
 
         # Сброс эффекта получения урона по таймеру
         if (self.tick >= self.e_red) and self.e_red > 0:
@@ -76,26 +79,37 @@ class Hero:
         old_x, old_y = self.rect.x, self.rect.y
 
         # Обработка движения
-        if self.m_up:
+        if self.m_up and self.rect.top > 0:
             self.rect.centery -= 1 * self.moveSpeed
-        if self.m_down:
+        if self.m_down and self.rect.bottom < world_height:
             self.rect.centery += 1 * self.moveSpeed
-        if self.m_right:
+        if self.m_right and self.rect.right < world_width:
             turn_r(self)
             self.rect.centerx += 1 * self.moveSpeed
-        if self.m_left:
+        if self.m_left and self.rect.left > 0:
             turn_l(self)
             self.rect.centerx -= 1 * self.moveSpeed
+
+
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > world_width:
+            self.rect.right = world_width
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > world_height:
+            self.rect.bottom = world_height
 
         # Обновление прямоугольника коллизий и обработка атаки
         self.collision_rect.center = self.rect.center
         self.deal_area_damage(enemies)
 
-    def attacking(self, screen):
+    def attacking(self, screen, camera=None):
         """
-        Анимация атаки с эффектом частиц
+        Анимация атаки с эффектом частиц с учетом камеры
         Args:
             screen: Поверхность для отрисовки
+            camera: Объект камеры (опционально)
         Returns:
             bool: True если анимация активна, False если завершена
         """
@@ -114,7 +128,7 @@ class Hero:
         # Создание поверхности для частиц с прозрачностью
         particles_surface = pygame.Surface((screen.get_width(), screen.get_height()), pygame.SRCALPHA)
         
-        # Определение точки удара (перед персонажем)
+        # Определение точки удара (перед персонажем) в мировых координатах
         hit_x = self.rect.centerx + (30 if self.facing_r else -30)
         hit_y = self.rect.centery - 10
         
@@ -140,10 +154,10 @@ class Hero:
                 if not hasattr(self, 'particles'):
                     self.particles = []
                     
-                # Добавление новой частицы
+                # Добавление новой частицы (в мировых координатах)
                 self.particles.append({
-                    'x': hit_x,
-                    'y': hit_y,
+                    'world_x': hit_x,  # Храним мировые координаты
+                    'world_y': hit_y,
                     'size': size,
                     'color': color,
                     'speed_x': math.cos(angle) * speed,
@@ -155,9 +169,9 @@ class Hero:
         # Обновление и отрисовка существующих частиц
         if hasattr(self, 'particles'):
             for particle in self.particles[:]:  # Используем копию списка
-                # Обновление позиции
-                particle['x'] += particle['speed_x']
-                particle['y'] += particle['speed_y']
+                # Обновление позиции в мировых координатах
+                particle['world_x'] += particle['speed_x']
+                particle['world_y'] += particle['speed_y']
                 
                 # Замедление частиц со временем
                 particle['speed_x'] *= 0.95
@@ -171,10 +185,18 @@ class Hero:
                     alpha = int(255 * (particle['lifetime'] / particle['max_lifetime']))
                     color_with_alpha = (*particle['color'], alpha)
                     
+                    # Преобразование мировых координат в экранные
+                    if camera:
+                        screen_x = particle['world_x'] + camera.camera.x
+                        screen_y = particle['world_y'] + camera.camera.y
+                    else:
+                        screen_x = particle['world_x']
+                        screen_y = particle['world_y']
+                    
                     # Рисуем квадратные частицы (эффект осколков)
                     particle_rect = pygame.Rect(
-                        int(particle['x'] - particle['size']),
-                        int(particle['y'] - particle['size']),
+                        int(screen_x - particle['size']),
+                        int(screen_y - particle['size']),
                         particle['size'] * 2,
                         particle['size'] * 2
                     )
@@ -190,7 +212,6 @@ class Hero:
         screen.blit(particles_surface, (0, 0))
         
         return True
-
     def deal_area_damage(self, enemies):
         """
         Нанесение урона врагам в области атаки
@@ -235,7 +256,9 @@ class Hero:
 
                 # Применение отбрасывания и урона
                 enemy.knockback(10, direction)
+                if enemy.hp <= self.attack_damage: self.points += 10
                 enemy.get_damage(self.attack_damage)
+                
 
     def get_damage(self, enemy):
         """

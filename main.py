@@ -13,6 +13,7 @@ import menu_controls
 from menu import Menu
 import ls
 from interface import Interface
+from camera import Camera
 
 
 # Инициализация основных систем pygame
@@ -42,13 +43,14 @@ light_system = ls.LightSystem(SCREEN_WIDTH, SCREEN_HEIGHT)
 interface = Interface(screen)
 
 
+
 def run():
     """
     Главная функция игры, запускающая главное меню.
     Управляет основным игровым циклом и переходом между меню и игрой.
     """
     # Настройка отображения окна
-    pygame.display.set_caption('Tenebris 0.0.5')
+    pygame.display.set_caption('Tenebris 0.0.7')
     pygame.display.set_icon(icon)
     pygame.mouse.set_visible(True)
 
@@ -80,7 +82,10 @@ def start_game():
     pygame.mouse.set_visible(False)
     
     # Создание фона из текстуры
-    background = create_background(dungeon_texture, SCREEN_WIDTH, SCREEN_HEIGHT)
+    background = create_background(dungeon_texture, WORLD_WIDTH, WORLD_HEIGHT)
+
+
+    cam = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT)
 
     # Запуск фоновой музыки
     pygame.mixer.music.play() 
@@ -94,11 +99,12 @@ def start_game():
     while True:
         # Обработка управления
         controls.events(hero)
-        hero.update(enemies)
+        hero.update(enemies, WORLD_WIDTH, WORLD_HEIGHT)
+        cam.update(hero)
 
         # Отрисовка игрового мира
         screen.fill(BG_COLOR)  # Базовый цвет фона
-        screen.blit(background, (0, 0))  # Текстурированный фон
+        screen.blit(background, cam.apply_rect(pygame.Rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT)))
 
         # Логика появления врагов
         if (random.random() < spawn_enemy_chance) and (len(enemies) < max_enemies_c):
@@ -108,18 +114,19 @@ def start_game():
         for enemy in enemies:
             enemy.update(enemies)
             enemy.chase_player(hero, enemies)
-            enemy.draw()
+            screen.blit(enemy.image, cam.apply(enemy))
         
         # Отрисовка персонажа
-        hero.draw()
-        hero.attacking(screen)
+        screen.blit(hero.image, cam.apply(hero))
+        hero.attacking(screen, cam)
         
         # Обновление системы освещения
-        light_system.update_light(hero.rect.center)  
+        light_system.update_light(cam.apply_pos(hero.rect.center)) 
         light_system.render(screen)  
 
         # Отрисовка интерфейса
         interface.draw_hp(screen, hero)
+        interface.draw_points(screen, hero)
     
         # Обновление экрана
         pygame.display.flip()
@@ -130,7 +137,7 @@ def start_game():
             break
 
     # Обработка завершения игры
-    restart_game = menu.show_death_screen(screen)
+    restart_game = menu.show_death_screen(screen, hero)
     if restart_game:
         pygame.quit()
         os.system("restart.bat")
