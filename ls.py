@@ -2,6 +2,7 @@ import pygame
 import random
 import math
 
+pygame.mixer.init()
 class LightSystem:
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width
@@ -52,18 +53,19 @@ class LightSystem:
         self.current_radius += (self.target_radius - self.current_radius) * self.SMOOTHNESS
         
         # Обычное мерцание
-        if random.random() < self.FLICKER_CHANCE:
+        if (random.random() < self.FLICKER_CHANCE) and (not self.is_light_out) and (not self.is_wind_effect):
             self.target_radius = self.base_radius * random.uniform(0.8, 1.2)
         
         # Редкое погасание
-        if not self.is_light_out and random.random() < self.LIGHT_OUT_CHANCE:
+        if (not self.is_light_out) and random.random() < self.LIGHT_OUT_CHANCE:
+            pygame.mixer.Sound("sounds/dark.mp3").play()
             self.is_light_out = True
-            self.light_out_duration = random.randint(1500, 5000)
+            self.light_out_duration = random.randint(3000, 6000)
             self.light_out_timer = current_time + self.light_out_duration
             self.target_radius = self.base_radius * 0
         
         # Сверхредкий эффект ветра (затухание)
-        if not self.is_wind_effect and random.random() < self.WIND_CHANCE:
+        if (not self.is_wind_effect) and random.random() < self.WIND_CHANCE:
             self.is_wind_effect = True
             self.wind_duration = random.randint(300, 800)  # 0.8-1 секунды
             self.wind_timer = current_time + self.wind_duration
@@ -71,11 +73,11 @@ class LightSystem:
             self.target_radius = self.base_radius * 0.3  # Сильное затухание
         
         # Восстановление после эффектов
-        if self.is_light_out and current_time > self.light_out_timer:
+        if self.is_light_out and (current_time > self.light_out_timer):
             self.is_light_out = False
             self.target_radius = self.base_radius
             
-        if self.is_wind_effect and current_time > self.wind_timer:
+        if self.is_wind_effect and (current_time > self.wind_timer):
             self.is_wind_effect = False
             self.target_radius = self.saved_target
         
@@ -83,6 +85,7 @@ class LightSystem:
         intensity = self.base_intensity
         if self.is_light_out: intensity += 30
         if self.is_wind_effect: intensity += 15
+        if intensity > 255: intensity = 255
         
         self._update_light_internal(center_pos, int(self.current_radius), intensity)
     

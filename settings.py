@@ -14,3 +14,4 @@ FPS = 60
 TILESIZE = 16 #размер плитки
 ARIAL_50 = pygame.font.SysFont('lucida console', 50)
 ARIAL_30 = pygame.font.SysFont('lucida console', 30)
+ARIAL_18 = pygame.font.SysFont('lucida console', 18)

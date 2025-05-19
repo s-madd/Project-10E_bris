@@ -1,5 +1,7 @@
 import pygame 
 import sys
+pygame.mixer.init()
+
 
 def events(hero):
     for event in pygame.event.get():
@@ -16,6 +18,10 @@ def events(hero):
                 hero.m_right = True
             elif event.key == pygame.K_a:
                 hero.m_left = True
+            
+            elif event.key == pygame.K_f:
+                hero.is_attacking = True
+                pygame.mixer.Sound("sounds/hit.mp3").play()
 
             
         elif event.type == pygame.KEYUP:
