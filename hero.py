@@ -41,7 +41,7 @@ class Hero:
         self.type = 'hero'           # Тип объекта для идентификации
         self.moveSpeed = 4           # Скорость передвижения
         self.facing_r = True         # Направление взгляда (вправо/влево)
-        self.hp = 100                # Здоровье
+        self.hp = 100            # Здоровье
         self.points = 0
 
         # Параметры атаки
@@ -49,7 +49,7 @@ class Hero:
         self.attack_progress = 0      # Прогресс анимации атаки
         self.attack_speed = 0.08      # Скорость анимации атаки
         self.attack_damage = 10       # Урон от атаки
-        self.attack_range = 10        # Дистанция атаки
+        self.attack_range = 70      # Дистанция атаки
         self.attack_width = 80        # Ширина области атаки
 
         # Счетчики и флаги
@@ -57,17 +57,95 @@ class Hero:
         self.tick = 0                # Общий счетчик кадров
         self.has_dealt_damage = False # Флаг нанесения урона в текущей атаке
 
+        self.inventory = {'matchsticks': {
+            'count': 2,
+            'strenght': 10,
+            'lifetime': 10
+        },
+                          'lighter': {
+                              'count': 2, 
+                              'strenght': 15,
+                              'lifetime': 15
+                          }}
+        
+        self.current_item_index = 0
+        self.current_item = 'matchsticks'
+
+        self.light_delay = 0
+        self.l_switch = False
+
+
+        
     def draw(self):
         """Отрисовка героя на экране"""
         self.screen.blit(self.image, self.rect)
 
-    def update(self, enemies, world_width, world_height):
+    def update(self, enemies, world_width, world_height, ls):
         """
         Обновление состояния героя каждый кадр
         Args:
             enemies: Список всех врагов для обработки взаимодействий
         """
         self.tick += 1  # Увеличение счетчика кадров
+
+
+        if self.current_item == 'matchsticks':
+            ls.base_radius =  80
+        elif self.current_item == 'lighter':
+            ls.base_radius = 130
+
+        if (self.l_switch == True) and (self.inventory[self.current_item]['strenght'] > 0):
+            self.l_switch = False
+            ls.fade_in_light(500)
+
+        if self.tick % FPS == 0:
+            
+            if self.inventory[self.current_item]['count'] > 0:
+                if self.inventory[self.current_item]['strenght'] <= 0:
+                    ls.fade_out_light(500)
+
+                    self.inventory[self.current_item]['count'] -= 1
+
+                    if self.inventory[self.current_item]['count'] > 0:
+                        self.inventory[self.current_item]['strenght'] = self.inventory[self.current_item]['lifetime']
+                        self.light_delay = FPS * 1
+
+                    else:
+                        pass
+                else:
+                    self.inventory[self.current_item]['strenght'] -= 1
+
+            else:
+                if ls.light_enabled:
+                    ls.fade_out_light(500)
+
+        if hasattr(self, 'light_delay'):
+            self.light_delay -= 1
+            if self.light_delay <= 0:
+                ls.fade_in_light(500)
+                del self.light_delay  # Удаляем временный атрибут
+            
+                # Автоматическое включение при появлении новых предметов
+                if not hasattr(self, 'light_delay') and \
+                    self.inventory[self.current_item]['count'] > 0 and \
+                    not ls.light_enabled:
+                    ls.fade_in_light(500)
+                    self.inventory[self.current_item]['strenght'] = self.inventory[self.current_item]['lifetime']
+
+
+        
+
+
+            # if self.inventory[self.current_item]['strenght'] > 0:
+            #     self.inventory[self.current_item]['strenght'] -= 1
+            # else:
+            #     self.inventory[self.current_item]['count'] -= 1
+            #     if self.inventory[self.current_item]['count'] > 0:
+            #         self.inventory[self.current_item]['strenght'] = self.inventory[self.current_item]['lifetime']
+
+            
+                
+            
 
         if self.tick % (FPS * 10) == 0: self.points += 5
 
@@ -103,6 +181,8 @@ class Hero:
         # Обновление прямоугольника коллизий и обработка атаки
         self.collision_rect.center = self.rect.center
         self.deal_area_damage(enemies)
+
+
 
     def attacking(self, screen, camera=None):
         """
@@ -256,7 +336,6 @@ class Hero:
 
                 # Применение отбрасывания и урона
                 enemy.knockback(10, direction)
-                if enemy.hp <= self.attack_damage: self.points += 10
                 enemy.get_damage(self.attack_damage)
                 
 
@@ -287,3 +366,6 @@ class Hero:
                 enemy.f_damage = False
                 enemy.dem_tick = 0
                 enemy.stoper = enemy.stop_before_atck * FPS
+
+    #def light_items(self):
+        

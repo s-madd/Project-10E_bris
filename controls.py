@@ -2,7 +2,6 @@ import pygame
 import sys
 pygame.mixer.init()
 
-
 def events(hero):
     for event in pygame.event.get():
         if event.type == pygame.QUIT: #нажатие крестика - выход
@@ -22,6 +21,11 @@ def events(hero):
             elif event.key == pygame.K_f:
                 hero.is_attacking = True
                 pygame.mixer.Sound("sounds/hit.mp3").play()
+
+            elif event.key == pygame.K_r:
+                hero.current_item_index = (hero.current_item_index + 1) % len(hero.inventory)
+                hero.current_item = list(hero.inventory.keys())[hero.current_item_index]
+                hero.l_switch = True
 
             
         elif event.type == pygame.KEYUP:

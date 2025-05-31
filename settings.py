@@ -13,7 +13,7 @@ HP_BAR_COLOR = (255, 255, 255)
 MENU_FONT_COLOR = (0, 0, 0)
 MENU_CHNG_BTN_COLOR = (180, 180, 180)
 FPS = 60
-TILESIZE = 16 #размер плитки
+
 ARIAL_50 = pygame.font.SysFont('lucida console', 50)
 ARIAL_30 = pygame.font.SysFont('lucida console', 30)
 ARIAL_18 = pygame.font.SysFont('lucida console', 18)

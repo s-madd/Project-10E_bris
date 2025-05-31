@@ -21,3 +21,25 @@ def turn_r(obj):
         obj.facing_r = True
         obj.image = pygame.transform.flip(obj.image, True, False)
         obj.saved_img = obj.base_image
+
+def create_background(texture, width, height):
+    """
+    Создает поверхность фона, заполненную повторяющейся текстурой.
+    
+    Args:
+        texture (pygame.Surface): Текстурная поверхность
+        width (int): Ширина фона
+        height (int): Высота фона
+    
+    Returns:
+        pygame.Surface: Созданная поверхность фона
+    """
+    background = pygame.Surface((width, height))
+    tex_width, tex_height = texture.get_size()
+    
+    # Заполнение поверхности текстурой
+    for x in range(0, width, tex_width):
+        for y in range(0, height, tex_height):
+            background.blit(texture, (x, y))
+    
+    return background

@@ -44,7 +44,7 @@ class Enemy():
 
         # Параметры здоровья и атаки
         self.hp = 40
-        self.damage = 10             # Урон за атаку
+        self.damage = 1         # Урон за атаку
         self.damage_distance = 40    # Дистанция атаки
         self.attack_speed = 2        # Задержка между атаками (в секундах)
         self.stop_before_atck = 1    # Время простоя после атаки
@@ -70,7 +70,7 @@ class Enemy():
         if self.alive:
             self.screen.blit(self.image, self.rect)
 
-    def update(self, enemies):
+    def update(self, enemies, player):
         """
         Обновление состояния врага каждый кадр
         Args:
@@ -96,8 +96,10 @@ class Enemy():
         # Проверка на смерть
         if self.hp <= 0:
             self.alive = False
+            self.die_animation(enemies)
             pygame.mixer.Sound("sounds/enemy_dead.mp3").play()
-            enemies.remove(self)
+            
+            player.points += 10
 
     def apply_knockback(self):
         """Применение эффекта отбрасывания при получении урона"""
@@ -202,12 +204,56 @@ class Enemy():
         self.knockback_direction = direction.normalize() if direction.length() > 0 else pygame.math.Vector2(0, 0)
 
     def get_damage(self, damage, time_red=0.5):
-        """
-        Обработка получения урона
-        Args:
-            damage: Количество получаемого урона
-            time_red: Длительность визуального эффекта (по умолчанию 0.5 сек)
-        """
-        self.hp -= damage
-        self.image = make_red(self.image, 0.7)  # Визуальный эффект получения урона
-        self.e_red = self.tick + time_red * FPS  # Установка таймера эффекта
+            """
+            Обработка получения урона
+            Args:
+                damage: Количество получаемого урона
+                time_red: Длительность визуального эффекта (по умолчанию 0.5 сек)
+            """
+            self.hp -= damage
+            self.image = make_red(self.image, 0.7)  # Визуальный эффект получения урона
+            self.e_red = self.tick + time_red * FPS  # Установка таймера эффекта
+
+    def die_animation(self, enemies):
+        """Анимация смерти: враг 'проваливается' в пол с эффектом расстворения"""
+        self.is_dying = True
+        self.death_timer = 0
+        self.dissolve_level = 0  # Уровень "растворения" (0-100%)
+        
+        # Сохраняем оригинальные параметры
+        if not hasattr(self, 'original_image'):
+            self.original_image = self.image.copy()
+        
+        def update_dissolve(instance):
+            self.death_timer += 1
+            progress = self.death_timer / FPS  # 1 секунда анимации при 60 FPS
+            
+            # 1. Эффект "проваливания" - смещение вниз с замедлением
+            self.rect.y += int(5 * (1 - progress**2))
+            
+            # 2. Эффект "растворения" - постепенное исчезновение снизу вверх
+            self.dissolve_level = min(100, progress * 120)  # Ускоряем растворение
+            
+            # Создаем маску растворения
+            dissolve_height = int(self.original_image.get_height() * (1 - self.dissolve_level/100))
+            if dissolve_height > 0:
+                self.image = self.original_image.subsurface(
+                    (0, 0, self.original_image.get_width(), dissolve_height))
+            else:
+                self.image = pygame.Surface((1, 1), pygame.SRCALPHA)
+            
+            # 3. Мигание красным в первой половине анимации
+            if progress < 0.5 and self.death_timer % 8 < 4:
+                temp_img = self.image.copy()
+                temp_img.fill((255, 50, 50, 150), special_flags=pygame.BLEND_RGBA_ADD)
+                self.image = temp_img
+            
+            # 4. Завершение анимации
+            if self.death_timer >= FPS:
+                enemies.remove(self)
+                return True
+            
+            return False
+        
+        # Заменяем метод update
+        self.update = lambda *args: update_dissolve(self)

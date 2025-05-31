@@ -4,6 +4,7 @@ import math
 import os
 import random
 import subprocess
+import base_func
 
 from hero import Hero
 from enemy import Enemy
@@ -11,7 +12,7 @@ from settings import *
 import controls
 import menu_controls
 from menu import Menu
-import ls
+import light_system
 from interface import Interface
 from camera import Camera
 
@@ -39,9 +40,8 @@ except pygame.error as e:
 # Инициализация основных игровых объектов
 hero = Hero(screen)
 menu = Menu()
-light_system = ls.LightSystem(SCREEN_WIDTH, SCREEN_HEIGHT)
 interface = Interface(screen)
-
+light_system = light_system.LightSystem(SCREEN_WIDTH, SCREEN_HEIGHT, interface)
 
 
 def run():
@@ -50,7 +50,7 @@ def run():
     Управляет основным игровым циклом и переходом между меню и игрой.
     """
     # Настройка отображения окна
-    pygame.display.set_caption('Tenebris 0.0.7')
+    pygame.display.set_caption('Tenebris 0.0.8')
     pygame.display.set_icon(icon)
     pygame.mouse.set_visible(True)
 
@@ -82,7 +82,7 @@ def start_game():
     pygame.mouse.set_visible(False)
     
     # Создание фона из текстуры
-    background = create_background(dungeon_texture, WORLD_WIDTH, WORLD_HEIGHT)
+    background = base_func.create_background(dungeon_texture, WORLD_WIDTH, WORLD_HEIGHT)
 
 
     cam = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT)
@@ -93,14 +93,15 @@ def start_game():
     # Настройка параметров врагов
     enemies = []
     max_enemies_c = 1
-    spawn_enemy_chance = 0.008
+    spawn_enemy_chance = 0.2
 
     # Основной игровой цикл
     while True:
         # Обработка управления
         controls.events(hero)
-        hero.update(enemies, WORLD_WIDTH, WORLD_HEIGHT)
+        hero.update(enemies, WORLD_WIDTH, WORLD_HEIGHT, light_system)
         cam.update(hero)
+        
 
         # Отрисовка игрового мира
         screen.fill(BG_COLOR)  # Базовый цвет фона
@@ -112,7 +113,7 @@ def start_game():
 
         # Обновление и отрисовка врагов
         for enemy in enemies:
-            enemy.update(enemies)
+            enemy.update(enemies, hero)
             enemy.chase_player(hero, enemies)
             screen.blit(enemy.image, cam.apply(enemy))
         
@@ -127,43 +128,23 @@ def start_game():
         # Отрисовка интерфейса
         interface.draw_hp(screen, hero)
         interface.draw_points(screen, hero)
+        interface.light_bar(hero)
+        interface.update()
     
         # Обновление экрана
         pygame.display.flip()
-        clock.tick(FPS)  # Поддержка заданной частоты кадров
+        clock.tick_busy_loop(FPS)  # Поддержка заданной частоты кадров
 
         # Проверка условия поражения
         if hero.hp <= 0:
             break
 
+        
     # Обработка завершения игры
     restart_game = menu.show_death_screen(screen, hero)
     if restart_game:
         pygame.quit()
         os.system("restart.bat")
-
-
-def create_background(texture, width, height):
-    """
-    Создает поверхность фона, заполненную повторяющейся текстурой.
-    
-    Args:
-        texture (pygame.Surface): Текстурная поверхность
-        width (int): Ширина фона
-        height (int): Высота фона
-    
-    Returns:
-        pygame.Surface: Созданная поверхность фона
-    """
-    background = pygame.Surface((width, height))
-    tex_width, tex_height = texture.get_size()
-    
-    # Заполнение поверхности текстурой
-    for x in range(0, width, tex_width):
-        for y in range(0, height, tex_height):
-            background.blit(texture, (x, y))
-    
-    return background
 
 
 if __name__ == "__main__":
