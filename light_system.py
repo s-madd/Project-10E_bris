@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from settings import *
 
 pygame.mixer.init()
 class LightSystem:
@@ -12,7 +13,7 @@ class LightSystem:
         
         # Основные параметры
         self.base_radius = 80
-        self.base_intensity = 220
+        self.base_intensity = 240
         self.current_radius = self.base_radius
         self.target_radius = self.base_radius
         
@@ -25,9 +26,9 @@ class LightSystem:
         self.light_enabled = True  # Новый переключатель света
         
         # Настройки эффектов (можно регулировать)
-        self.FLICKER_CHANCE = 0.008    # 0.8% шанс мерцания
-        self.LIGHT_OUT_CHANCE = 0.0001   # 0.01% шанс погасания
-        self.WIND_CHANCE = 0.0008       # 0.05% шанс эффекта ветра
+        self.FLICKER_CHANCE = 4 / 100 / FPS    # 0.8% шанс мерцания
+        self.LIGHT_OUT_CHANCE = 0.1 / 100 / FPS   # 0.1% шанс погасания
+        self.WIND_CHANCE = 0.7 / 100 / FPS       # 0.05% шанс эффекта ветра
         self.SMOOTHNESS = 0.06          # Плавность изменений
 
         self.interface = interface

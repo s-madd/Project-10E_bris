@@ -43,3 +43,9 @@ def create_background(texture, width, height):
             background.blit(texture, (x, y))
     
     return background
+
+def scale_img(image):
+    scale_factor = 0.5
+    new_size = (int(image.get_width() * scale_factor), 
+                int(image.get_height() * scale_factor))
+    return pygame.transform.scale(image, new_size)

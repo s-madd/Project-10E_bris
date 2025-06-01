@@ -15,9 +15,10 @@ from menu import Menu
 import light_system
 from interface import Interface
 from camera import Camera
+from items import *
+import animations
 
 
-# Инициализация основных систем pygame
 pygame.init()
 
 # Инициализация аудиосистемы и загрузка музыки
@@ -84,28 +85,51 @@ def start_game():
     # Создание фона из текстуры
     background = base_func.create_background(dungeon_texture, WORLD_WIDTH, WORLD_HEIGHT)
 
-
     cam = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT)
 
     # Запуск фоновой музыки
-    pygame.mixer.music.play() 
+    pygame.mixer.music.play(loops=-1) 
+    scary_music_f = False
+    scary_music = pygame.mixer.Sound('sounds/scary_music.mp3')
 
-    # Настройка параметров врагов
+    # Настройка параметров спрайтов
     enemies = []
-    max_enemies_c = 1
-    spawn_enemy_chance = 0.2
 
-    # Основной игровой цикл
+
+    matchsticks = []
+    max_matchsticks_c = 5
+    spawn_matchsticks_chance = 3 / 100 / FPS
+
+    lighters = []
+    max_lighters_c = 3
+    spawn_lighters_chance = 2 / 100 / FPS
+
+    medkits = []
+    max_medkits_c = 5
+    spawn_medkits_chance = 2 / 100 / FPS
+
+    # Основной игровой циклa
     while True:
         # Обработка управления
         controls.events(hero)
-        hero.update(enemies, WORLD_WIDTH, WORLD_HEIGHT, light_system)
         cam.update(hero)
+        hero.update(enemies, WORLD_WIDTH, WORLD_HEIGHT, light_system, interface)
+        
         
 
         # Отрисовка игрового мира
         screen.fill(BG_COLOR)  # Базовый цвет фона
         screen.blit(background, cam.apply_rect(pygame.Rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT)))
+
+
+        #Изменение шанса спавна и макс кол-во спрайтов в соотвествии с состоянием света
+        if light_system.light_enabled == False:
+            max_enemies_c = 7
+            spawn_enemy_chance = 15 / 100 / FPS
+        else:
+            max_enemies_c = 4
+            spawn_enemy_chance = 8 / 100 / FPS
+
 
         # Логика появления врагов
         if (random.random() < spawn_enemy_chance) and (len(enemies) < max_enemies_c):
@@ -113,13 +137,59 @@ def start_game():
 
         # Обновление и отрисовка врагов
         for enemy in enemies:
+            if light_system.light_enabled == False:
+                enemy.attack_speed = 1
+                enemy.damage = 2
+                enemy.moveSpeed = 4
+            else:
+                enemy.attack_speed = enemy.standart_attack_speed
+                enemy.damage = enemy.standart_damage
+                enemy.moveSpeed = enemy.standart_moveSpeed
+                
             enemy.update(enemies, hero)
             enemy.chase_player(hero, enemies)
             screen.blit(enemy.image, cam.apply(enemy))
         
+
+
+
+        if (random.random() < spawn_matchsticks_chance) and (len(matchsticks) < max_matchsticks_c):
+            matchsticks.append(Matchstick(screen))
+
+        for matchstick in matchsticks:
+            matchstick.update(matchsticks, hero, interface)
+            screen.blit(matchstick.image, cam.apply(matchstick))
+
+
+        if (random.random() < spawn_lighters_chance) and (len(lighters) < max_lighters_c):
+            lighters.append(Lighter(screen))
+
+        for lighter in lighters:
+            lighter.update(lighters, hero, interface)
+            screen.blit(lighter.image, cam.apply(lighter))
+
+
+        if (random.random() < spawn_medkits_chance) and (len(medkits) < max_medkits_c):
+            medkits.append(Medkit(screen))
+
+        for medkit in medkits:
+            medkit.update(medkits, hero, interface)
+            screen.blit(medkit.image, cam.apply(medkit))
+        
+
+        for item in hero.inventory.keys():
+            if (hero.inventory[item]['count'] != 0) or (hero.inventory[item]['strenght'] != 0):
+                scary_music_f = False
+                scary_music.fadeout(5000)
+                break
+        else:
+            if scary_music_f == False:
+                scary_music_f = True
+                scary_music.play()
+
         # Отрисовка персонажа
         screen.blit(hero.image, cam.apply(hero))
-        hero.attacking(screen, cam)
+        animations.attacking_animation(hero, screen, cam)
         
         # Обновление системы освещения
         light_system.update_light(cam.apply_pos(hero.rect.center)) 
