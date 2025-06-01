@@ -11,7 +11,6 @@ from animations import *
 # Инициализация аудиосистемы pygame
 pygame.mixer.init()
 
-
 class Enemy():
     def __init__(self, screen):
         """Инициализация врага с базовыми параметрами"""
@@ -70,10 +69,12 @@ class Enemy():
         self.collision_rect = self.rect.inflate(-10, -10)
         self.sound_dead = pygame.mixer.Sound("sounds/enemy_dead.mp3")
 
+
     def draw(self):
         """Отрисовка врага на экране, если он жив"""
         if self.alive:
             self.screen.blit(self.image, self.rect)
+
 
     def update(self, enemies, player):
         """
@@ -107,6 +108,7 @@ class Enemy():
             
             player.points += 10
 
+
     def apply_knockback(self):
         """Применение эффекта отбрасывания при получении урона"""
         old_pos = self.rect.copy()
@@ -122,6 +124,7 @@ class Enemy():
             
         # Обновление прямоугольника коллизий
         self.collision_rect.center = self.rect.center
+
 
     def check_collisions(self, enemies):
         """
@@ -141,6 +144,7 @@ class Enemy():
                 self.rect.x += (dx / distance) * push_force
                 self.rect.y += (dy / distance) * push_force
                 self.collision_rect.center = self.rect.center
+
 
     def chase_player(self, player, enemies):
         """
@@ -197,6 +201,7 @@ class Enemy():
         if distance <= self.damage_distance and not self.knockback_active:
             player.get_damage(self) 
 
+
     def knockback(self, force, direction):
         """
         Активация эффекта отбрасывания
@@ -208,6 +213,7 @@ class Enemy():
         self.knockback_force = force
         # Нормализация направления (если вектор не нулевой)
         self.knockback_direction = direction.normalize() if direction.length() > 0 else pygame.math.Vector2(0, 0)
+
 
     def get_damage(self, damage, time_red=0.5):
             """

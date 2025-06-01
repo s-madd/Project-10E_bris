@@ -1,6 +1,8 @@
 import pygame
 from settings import *
 
+
+
 class Camera:
     def __init__(self, width, height, world_width, world_height):
         self.camera = pygame.Rect(0, 0, width, height)
@@ -12,17 +14,21 @@ class Camera:
         self.true_y = 0
         self.smoothness = 0.05  # Коэффициент плавности
     
+
     def apply(self, entity):
         """Применяет смещение камеры к объекту"""
         return entity.rect.move(self.camera.topleft)
     
+
     def apply_rect(self, rect):
         """Применяет смещение камеры к прямоугольнику"""
         return rect.move(self.camera.topleft)
     
+
     def apply_pos(self, pos):
         """Применяет смещение камеры к позиции"""
         return (pos[0] + self.camera.x, pos[1] + self.camera.y)
+    
     
     def update(self, target):
         """Обновляет позицию камеры с учетом границ мира"""

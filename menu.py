@@ -11,7 +11,7 @@ class Menu:
         self._current_option_idex = 0 # текущая выбранная область меню
 
     def append_option(self, option, callback): #добавление опции (текст пункта меню, функция)
-        self._option_surfaces.append(ARIAL_50.render(option, True, MENU_FONT_COLOR)) #добавление отренд. текста
+        self._option_surfaces.append(LUCIDA_50.render(option, True, MENU_FONT_COLOR)) #добавление отренд. текста
         self._callbacks.append(callback) #добавляем опцию
 
     def switch(self, direction): #переключение
@@ -35,16 +35,16 @@ class Menu:
         screen.fill((0, 0, 0))
         
         # Текст "Вы погибли"
-        death_text = ARIAL_50.render("ВЫ ПОГИБЛИ", True, (255, 255, 255))
+        death_text = LUCIDA_50.render("ВЫ ПОГИБЛИ", True, (255, 255, 255))
         death_rect = death_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 50))
         screen.blit(death_text, death_rect)
         
         # Инструкция для продолжения
-        restart_text = ARIAL_30.render("Нажмите ESC для рестарта", True, (255, 255, 255))
+        restart_text = LUCIDA_30.render("Нажмите ESC для рестарта", True, (255, 255, 255))
         restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 50))
         screen.blit(restart_text, restart_rect)
 
-        points_text = ARIAL_30.render(f"Заработано {hero.points} очков", True, (255, 255, 255))
+        points_text = LUCIDA_30.render(f"Заработано {hero.points} очков", True, (255, 255, 255))
         points_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2 + 50, SCREEN_HEIGHT//2 + 150))
         screen.blit(points_text, points_rect)
         

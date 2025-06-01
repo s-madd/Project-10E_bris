@@ -4,9 +4,8 @@ import random
 import math
 
 
-def die_animation(obj, enemies):
-    """Анимация смерти: 'проваливается' в пол с эффектом расстворения"""
 
+def die_animation(obj, enemies):
     """"Обязательно наличие следующих переменных:
     self.is_dying = ...
     self.death_timer = ...
@@ -60,9 +59,7 @@ def die_animation(obj, enemies):
 
 
 
-
-#Анимация частиц при атаке
-def attacking_animation(obj, screen, camera=None):
+def attacking_animation(obj, screen, camera=None): #Анимация частиц при атаке
     """Обязательно наличие следующих переменных:
     self.is_attacking = ...
     self.attack_progress = ...

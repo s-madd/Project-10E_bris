@@ -79,15 +79,8 @@ class Hero:
         self.firts_light = True
 
 
-        
-    def draw(self):
-        """Отрисовка героя на экране"""
-        self.screen.blit(self.image, self.rect)
-
-
     def update(self, enemies, world_width, world_height, ls, interface):
         self.tick += 1  # Увеличение счетчика кадров. Нужен для реализации задержек без delay
-
 
         """Блок освещения"""
         #Изменяем параметры освещения в зависимости от выбранного предмета
@@ -99,12 +92,10 @@ class Hero:
             ls.base_radius = 130
             ls.base_intensity = 220
 
-
         #Первая спичка, производим звук
         if self.firts_light:
             pygame.mixer.Sound(f'sounds/{self.current_item}.mp3').play()
             self.firts_light = False 
-
 
         #Переключение предмета кнопкой R
         if (self.l_switch == True): 
@@ -117,12 +108,10 @@ class Hero:
                 ls.fade_out_light(100)
                 interface.add_notification('я начинаю чувствовать страх..')
 
-
         #Флаг empty - пустой инвентарь в категории выбранного предмета. Если инвент пустой, то после нахождения предмета нужно зажечь свет (используется в дальнейшем)
         if (self.inventory[self.current_item]['count'] == 0) and (self.inventory[self.current_item]['strenght'] == 0):
             self.inventory[self.current_item]['empty'] = True
             
-
 
         #Логика инструментов освещения
         if (self.inventory[self.current_item]['strenght'] == 0) and (self.inventory[self.current_item]['count'] > 0):
@@ -159,9 +148,10 @@ class Hero:
                     pygame.mixer.Sound(f'sounds/{self.current_item}.mp3').play()
 
 
+
         """Основной блок"""
         #Очки за время выживания
-        if self.tick % (FPS * 10) == 0: self.points += 5
+        if self.tick % (FPS * 10) == 0: self.points += 2
 
         # Сброс эффекта получения урона по таймеру
         if (self.tick >= self.e_red) and self.e_red > 0:
@@ -244,11 +234,6 @@ class Hero:
                 
 
     def get_damage(self, enemy):
-        """
-        Обработка получения урона от врага
-        Args:
-            enemy: Объект врага, наносящего урон
-        """
         # Расчет расстояния до врага
         dx = self.rect.centerx - enemy.rect.centerx
         dy = self.rect.centery - enemy.rect.centery

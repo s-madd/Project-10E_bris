@@ -14,6 +14,6 @@ MENU_FONT_COLOR = (0, 0, 0)
 MENU_CHNG_BTN_COLOR = (180, 180, 180)
 FPS = 60
 
-ARIAL_50 = pygame.font.SysFont('lucida console', 50)
-ARIAL_30 = pygame.font.SysFont('lucida console', 30)
-ARIAL_18 = pygame.font.SysFont('lucida console', 18)
+LUCIDA_50 = pygame.font.SysFont('lucida console', 50)
+LUCIDA_30 = pygame.font.SysFont('lucida console', 30)
+LUCIDA_18 = pygame.font.SysFont('lucida console', 18)

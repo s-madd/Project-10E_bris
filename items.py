@@ -17,11 +17,13 @@ class Item():
         self.tick = 0
 
 
+
 class Matchstick(Item):
     def __init__(self, screen):
         super().__init__(screen)
         
-        self.image = scale_img(pygame.image.load('images/matchsticks.png'))
+        self.image = scale_img(pygame.image.load('images/matchsticks.png'), 0.5)
+
 
     def update(self, matchsticks, hero, interface):
         dx = hero.rect.centerx - self.rect.centerx
@@ -39,11 +41,13 @@ class Matchstick(Item):
                 hero.inventory['matchsticks']['count'] += 1
 
 
+
 class Lighter(Item):
     def __init__(self, screen):
         super().__init__(screen)
 
-        self.image = scale_img(pygame.image.load('images/lighter.png'))
+        self.image = scale_img(pygame.image.load('images/lighter.png'), 0.5)
+
 
     def update(self, lighters, hero, interface):
         dx = hero.rect.centerx - self.rect.centerx
@@ -61,11 +65,13 @@ class Lighter(Item):
                 hero.inventory['lighter']['count'] += 1
 
 
+
 class Medkit(Item):
     def __init__(self, screen):
         super().__init__(screen)
 
-        self.image = scale_img(pygame.image.load('images/medkit.png'))
+        self.image = scale_img(pygame.image.load('images/medkit.png'), 0.5)
+
 
     def update(self, medkits, hero, interface):
         dx = hero.rect.centerx - self.rect.centerx
