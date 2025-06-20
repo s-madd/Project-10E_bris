@@ -1,7 +1,6 @@
 import pygame
 import sys
 from settings import *
-import time
 
 
 class Menu:

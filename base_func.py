@@ -1,6 +1,4 @@
 import pygame 
-import settings
-import sys
 
 
 def make_red(image, intensity=0.5):

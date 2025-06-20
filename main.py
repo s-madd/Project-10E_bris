@@ -1,15 +1,14 @@
 import pygame
 import sys
-import math
 import os
 import random
-import subprocess
 import base_func
 
 import controls
 import menu_controls
 import animations
 import light_system
+import sprites
 
 from settings import *
 from items import *
@@ -18,7 +17,6 @@ from interface import Interface
 from camera import Camera
 from menu import Menu
 from hero import Hero
-from enemy import Enemy
 
 
 pygame.init()
@@ -42,18 +40,15 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 menu = Menu()
 cam = Camera(SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH, WORLD_HEIGHT)
 interface = Interface(screen)
-
 light_sys = light_system.LightSystem(SCREEN_WIDTH, SCREEN_HEIGHT, interface)
-
 hero = Hero(screen)
-
 clock = pygame.time.Clock()
 
 
 
 def run():
     """ОКНО"""
-    pygame.display.set_caption('Tenebris 0.1.0')
+    pygame.display.set_caption('Tenebris 0.1.1')
     pygame.display.set_icon(icon)
     pygame.mouse.set_visible(True)
 
@@ -93,6 +88,8 @@ def start_game():
 
     """ПАРАМЕТРЫ СПРАЙТОВ"""
     enemies = []
+    hounds = []
+    ghouls = []
 
     matchsticks = []
     max_matchsticks_c = 5
@@ -121,16 +118,25 @@ def start_game():
 
         #Изменение шанса спавна и макс кол-во спрайтов в соотвествии с состоянием света
         if light_sys.light_enabled == False:
-            max_enemies_c = 7
-            spawn_enemy_chance = 15 / 100 / FPS
+            max_hound_c = 7
+            spawn_hound_chance = 15 / 100 / FPS
+
+            max_ghoul_c = 4
+            spawn_ghoul_chance = 5 / 100 / FPS
         else:
-            max_enemies_c = 4
-            spawn_enemy_chance = 8 / 100 / FPS
+            max_hound_c = 4
+            spawn_hound_chance = 8 / 100 / FPS
+
+            max_ghoul_c = 2
+            spawn_ghoul_chance = 2 / 100 / FPS
 
 
         #Спавн игровых элементов
-        if (random.random() < spawn_enemy_chance) and (len(enemies) < max_enemies_c):
-            enemies.append(Enemy(screen))
+        if (random.random() < spawn_hound_chance) and (len(hounds) < max_hound_c):
+            hounds.append(sprites.Hound(screen))
+            
+        if (random.random() < spawn_ghoul_chance) and (len(ghouls) < max_ghoul_c):
+            ghouls.append(sprites.Ghoul(screen))
 
         if (random.random() < spawn_matchsticks_chance) and (len(matchsticks) < max_matchsticks_c):
             matchsticks.append(Matchstick(screen))
@@ -169,19 +175,27 @@ def start_game():
             matchstick.update(matchsticks, hero, interface)
             screen.blit(matchstick.image, cam.apply(matchstick)) #Спички
 
+        enemies = hounds + ghouls
         for enemy in enemies:
             if light_sys.light_enabled == False:
-                enemy.attack_speed = 1
-                enemy.damage = 2
-                enemy.moveSpeed = 4
+                enemy.attack_speed = enemy.dark_attack_speed
+                enemy.damage = enemy.dark_damage
+                enemy.moveSpeed = enemy.dark_moveSpeed
             else:
-                enemy.attack_speed = enemy.standart_attack_speed
-                enemy.damage = enemy.standart_damage
-                enemy.moveSpeed = enemy.standart_moveSpeed
-                
-            enemy.update(enemies, hero)
-            enemy.chase_player(hero, enemies)
-            screen.blit(enemy.image, cam.apply(enemy)) #Враги
+                enemy.attack_speed = enemy.base_attack_speed
+                enemy.damage = enemy.base_damage
+                enemy.moveSpeed = enemy.base_moveSpeed
+            
+            if enemy.type == 'hound': 
+                enemy.update(hounds, hero)
+                enemy.chase_player(hero, hounds)
+            elif enemy.type == 'ghoul':
+                enemy.update(ghouls, hero) 
+                enemy.chase_player(hero, ghouls)
+                animations.vampire_blood_effect(hero, screen, cam, enemy)
+
+            screen.blit(enemy.image, cam.apply(enemy)) 
+
 
         screen.blit(hero.image, cam.apply(hero)) #Герой
         animations.attacking_animation(hero, screen, cam) #Отрисовка анимаций атаки героя

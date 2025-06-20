@@ -1,7 +1,5 @@
 import pygame
-import sys
 import math
-import random
 
 from settings import *
 from base_func import *
@@ -59,7 +57,7 @@ class Hero:
         self.has_dealt_damage = False # Флаг нанесения урона в текущей атаке
 
         self.inventory = {'matchsticks': {
-            'count': 2,
+            'count': 4,
             'strenght': 15,
             'lifetime': 15,
             'empty': False
@@ -77,6 +75,13 @@ class Hero:
         self.light_delay = 0
         self.l_switch = False
         self.firts_light = True
+
+        self.flag_emptylight_message = True
+
+        self.blood_effect_active = False
+        self.blood_particles = []
+        self.blood_effect_start = 0
+
 
 
     def update(self, enemies, world_width, world_height, ls, interface):
@@ -106,12 +111,10 @@ class Hero:
 
             else:
                 ls.fade_out_light(100)
-                interface.add_notification('я начинаю чувствовать страх..')
-
+                
         #Флаг empty - пустой инвентарь в категории выбранного предмета. Если инвент пустой, то после нахождения предмета нужно зажечь свет (используется в дальнейшем)
         if (self.inventory[self.current_item]['count'] == 0) and (self.inventory[self.current_item]['strenght'] == 0):
             self.inventory[self.current_item]['empty'] = True
-            
 
         #Логика инструментов освещения
         if (self.inventory[self.current_item]['strenght'] == 0) and (self.inventory[self.current_item]['count'] > 0):
@@ -125,7 +128,6 @@ class Hero:
             elif self.inventory[self.current_item]['count'] == 1:
                 self.inventory[self.current_item]['count'] -= 1
                 self.light_delay = FPS * 1
-                interface.add_notification('я начинаю чувствовать страх..')
 
         else:
             if self.tick % FPS == 0:
@@ -136,7 +138,6 @@ class Hero:
                         ls.fade_in_light(500)
 
                     self.inventory[self.current_item]['strenght'] -= 1
-
 
         #Восстановление после затухания
         if self.light_delay > 0:
@@ -183,6 +184,15 @@ class Hero:
         # Обновление прямоугольника коллизий и обработка атаки
         self.collision_rect.center = self.rect.center
         self.deal_area_damage(enemies)
+
+        for item in self.inventory:
+            if self.inventory[item]['empty'] == False:
+                self.flag_emptylight_message = False
+                break
+        else:
+            if self.flag_emptylight_message == False:
+                self.flag_emptylight_message = True
+                interface.add_notification('я начинаю чувствовать страх..')
 
 
 
@@ -233,6 +243,7 @@ class Hero:
                 enemy.get_damage(self.attack_damage)
                 
 
+
     def get_damage(self, enemy):
         # Расчет расстояния до врага
         dx = self.rect.centerx - enemy.rect.centerx
@@ -241,18 +252,26 @@ class Hero:
         
         # Проверка условий для получения урона
         if distance <= enemy.damage_distance and not enemy.knockback_active:
+            if enemy.type == 'ghoul':
+                self.blood_effect_active = True
+            else:
+                self.blood_effect_active = False
+
             # Проверка тайминга атаки врага
             if (enemy.dem_tick % (enemy.attack_speed * FPS) == 0) or enemy.f_damage:
                 # Визуальный эффект получения урона
-                self.image = make_red(self.image, 0.7)
-                self.e_red = self.tick + enemy.time_red * FPS
-                
+                if enemy.type == 'hound':
+                    self.image = make_red(self.image, 0.7)
+                    self.e_red = self.tick + enemy.time_red * FPS
+                    pygame.mixer.Sound("sounds/scream.mp3").play()
+
                 # Уменьшение здоровья
                 self.hp -= enemy.damage
-                pygame.mixer.Sound("sounds/scream.mp3").play()
                 
                 # Сброс параметров врага после атаки
                 enemy.f_damage = False
                 enemy.dem_tick = 0
                 enemy.stoper = enemy.stop_before_atck * FPS
+        else:
+            self.blood_effect_active = False
         

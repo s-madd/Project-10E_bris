@@ -1,10 +1,7 @@
 import pygame
-import sys
-import math
 import time
 
 from settings import *
-import controls
 from base_func import *
 
 class Interface:
@@ -109,17 +106,27 @@ class Interface:
     def draw_menu_text(self):
         self.menu_text1 = LUCIDA_18.render('SPACE - подтвердить выбор', True, MENU_FONT_COLOR)
         self.menu_text2 = LUCIDA_18.render('WASD - управление', True, MENU_FONT_COLOR)
+        self.menu_text3 = LUCIDA_18.render('f - ударить', True, MENU_FONT_COLOR)
+        self.menu_text4 = LUCIDA_18.render('r - сменить снаряжение', True, MENU_FONT_COLOR)
 
         self.m_t1_rect = self.menu_text1.get_rect()
         self.m_t2_rect = self.menu_text2.get_rect()
+        self.m_t3_rect = self.menu_text3.get_rect()
+        self.m_t4_rect = self.menu_text4.get_rect()
 
         self.m_t1_rect.x = 320
         self.m_t1_rect.y = 650
         self.m_t2_rect.x = 320
         self.m_t2_rect.y = 700
-        
+        self.m_t3_rect.x = 280
+        self.m_t3_rect.y = 750
+        self.m_t4_rect.x = 430
+        self.m_t4_rect.y = 750
+
         self.screen.blit(self.menu_text1, self.m_t1_rect)
         self.screen.blit(self.menu_text2, self.m_t2_rect)
+        self.screen.blit(self.menu_text3, self.m_t3_rect)
+        self.screen.blit(self.menu_text4, self.m_t4_rect)
 
 
 

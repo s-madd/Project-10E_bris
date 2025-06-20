@@ -17,15 +17,9 @@ class Enemy():
         self.screen = screen
         
         # Загрузка и масштабирование изображения врага
-        original_image = pygame.image.load('images/enemy.png')
-        scale_factor = 0.7
-        new_size = (int(original_image.get_width() * scale_factor), 
-                    int(original_image.get_height() * scale_factor))
-        self.base_image = pygame.transform.scale(original_image, new_size)
-        
+        self.image = pygame.Surface((20, 20))
+
         # Настройка изображения и позиции
-        self.image = self.base_image
-        self.saved_img = self.base_image
         self.rect = self.image.get_rect()
         self.rect.x = random.choice(range(1, WORLD_WIDTH))  # Случайная позиция по X
         self.rect.y = random.choice(range(1, WORLD_HEIGHT))  # Случайная позиция по Y
@@ -38,18 +32,26 @@ class Enemy():
 
         # Базовые параметры врага
         self.alive = True
-        self.type = 'enemy'          # Тип объекта для идентификации
-        self.moveSpeed = 2           # Скорость передвижения
-        self.standart_moveSpeed = 2
-        self.facing_r = True         # Направление взгляда (вправо/влево)
+        self.type = None    
+
+        self.base_moveSpeed = 2  
+        self.moveSpeed = self.base_moveSpeed   # Скорость передвижения
+        self.dark_moveSpeed = 4  
+        
+        self.facing_r = True      # Направление взгляда (вправо/влево)
 
         # Параметры здоровья и атаки
-        self.hp = 40
-        self.damage = 1         # Урон за атаку
-        self.standart_damage = 1
-        self.damage_distance = 40    # Дистанция атаки
-        self.attack_speed = 2        # Задержка между атаками (в секундах)
-        self.standart_attack_speed = 2
+        self.hp = 10
+        self.base_damage = 1
+        self.damage = self.base_damage
+        self.dark_damage = 2     
+        
+        self.damage_distance = 40   # Дистанция атаки
+
+        self.base_attack_speed = 2
+        self.attack_speed = self.base_attack_speed   # Задержка между атаками (в секундах)
+        self.dark_attack_speed = 1    
+        
         self.stop_before_atck = 1    # Время простоя после атаки
         self.time_red = 0.5          # Длительность эффекта получения урона
 
@@ -67,7 +69,7 @@ class Enemy():
 
         # Прямоугольник для обработки коллизий (немного меньше основного)
         self.collision_rect = self.rect.inflate(-10, -10)
-        self.sound_dead = pygame.mixer.Sound("sounds/enemy_dead.mp3")
+        self.sound_dead = None
 
 
     def draw(self):
@@ -108,11 +110,9 @@ class Enemy():
             
             player.points += 10
 
-
+    
     def apply_knockback(self):
         """Применение эффекта отбрасывания при получении урона"""
-        old_pos = self.rect.copy()
-        
         # Применение силы отбрасывания
         self.rect.x += self.knockback_direction.x * self.knockback_force
         self.rect.y += self.knockback_direction.y * self.knockback_force
@@ -194,12 +194,17 @@ class Enemy():
         self.check_collisions(enemies)
 
         # Сброс флага атаки при отдалении от игрока
-        if distance > 55: 
+        if distance > self.damage_distance * 1.2: 
             self.f_damage = True
         
         # Атака игрока при приближении
         if distance <= self.damage_distance and not self.knockback_active:
             player.get_damage(self) 
+            if self.type == 'ghoul' and self.f_damage == True:
+                pygame.mixer.Sound("sounds/ghoul.mp3").play()
+            elif self.type == 'ghoul' and self.tick % (FPS * 4) == 0:
+                pygame.mixer.Sound("sounds/ghoul.mp3").play()
+                
 
 
     def knockback(self, force, direction):
@@ -226,3 +231,74 @@ class Enemy():
             self.image = make_red(self.image, 0.7)  # Визуальный эффект получения урона
             self.e_red = self.tick + time_red * FPS  # Установка таймера эффекта
 
+
+
+
+class Hound(Enemy):
+    def __init__(self, screen):
+        super().__init__(screen)
+        
+        """Настройка изображения"""
+        original_image = pygame.image.load('images/enemy.png')
+        scale_factor = 0.7
+        new_size = (int(original_image.get_width() * scale_factor), 
+                    int(original_image.get_height() * scale_factor))
+        self.base_image = pygame.transform.scale(original_image, new_size)
+        self.image = self.base_image
+        self.saved_img = self.base_image
+
+
+        """Параметры"""
+        self.type = 'hound' 
+        self.hp = 40
+        self.damage_distance = 40
+        self.sound_dead = pygame.mixer.Sound("sounds/enemy_dead.mp3")
+
+        #динамические параметры
+        self.base_moveSpeed = 2
+        self.moveSpeed = self.base_moveSpeed  
+        self.dark_moveSpeed = 4
+        
+        self.base_damage = 1
+        self.damage = self.base_damage
+        self.dark_damage = 2
+
+        self.base_attack_speed = 2
+        self.attack_speed = self.base_attack_speed   
+        self.dark_attack_speed = 1
+        
+
+class Ghoul(Enemy):
+    def __init__(self, screen):
+        super().__init__(screen)
+    
+        """Настройка изображения"""
+        original_image = pygame.image.load('images/ghoul.png')
+        scale_factor = 0.7
+        new_size = (int(original_image.get_width() * scale_factor), 
+                    int(original_image.get_height() * scale_factor))
+        self.base_image = pygame.transform.scale(original_image, new_size)
+        self.image = self.base_image
+        self.saved_img = self.base_image
+
+
+        """Параметры"""
+        self.type = 'ghoul' 
+        self.hp = 60
+        self.damage_distance = 150
+        self.sound_dead = pygame.mixer.Sound("sounds/enemy_dead.mp3")
+
+        #динамические параметры
+        self.base_moveSpeed = 5
+        self.moveSpeed = self.base_moveSpeed  
+        self.dark_moveSpeed = 6
+        
+        self.base_damage = 0.25
+        self.damage = self.base_damage
+        self.dark_damage = 0.5
+
+        self.base_attack_speed = 0.5
+        self.attack_speed = self.base_attack_speed   
+        self.dark_attack_speed = 0.38
+    
+    
