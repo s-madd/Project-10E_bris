@@ -299,6 +299,6 @@ class Ghoul(Enemy):
 
         self.base_attack_speed = 0.5
         self.attack_speed = self.base_attack_speed   
-        self.dark_attack_speed = 0.38
+        self.dark_attack_speed = 0.33
     
     
